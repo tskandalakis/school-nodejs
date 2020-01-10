@@ -5,13 +5,13 @@ const jwt = require("jsonwebtoken");
 const User = require("../model/User");
 const config = require("../../config");
 
-function hashPassword (password, cb) {
-  bcrypt.genSalt(10, (err, salt) => {
-    if (err) return cb(err, null);
-    bcrypt.hash(password, salt, (err, hash) => {
-      return cb(err, hash);
-    });
-  });
+async function hashPassword (password) {
+  try {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  } catch (err) {
+    throw Boom.badRequest(err);
+  }
 }
 
 function createToken (user) {
@@ -21,51 +21,32 @@ function createToken (user) {
     scopes = "admin";
   }
 
-  return jwt.sign({ id: user._id, username: user.username, scope: scopes }, config.secret, { algorithm: "HS256", expiresIn: "1h" });
+  return jwt.sign({ id: user._id, email: user.email, name: user.name, scope: scopes }, config.secret, { algorithm: "HS256", expiresIn: "1h" });
 }
 
-function verifyLogin (req, res) {
-  const password = req.payload.password;
+async function verifyLogin (req, h) {
+  try {
+    const user = await User.findOne({
+      email: req.payload.email
+    });
 
-  User.findOne({
-    $or: [
-      { email: req.payload.email }
-    ]
-  }, (err, user) => {
-    if (err) {
-      Boom.badRequest(err);
+    if (!user) {
+      throw new Error();
     }
-    if (user) {
-      bcrypt.compare(password, user.password, (err, isValid) => {
-        if (err) {
-          Boom.badRequest(err);
-        }
-        if (isValid) {
-          res(user);
-        }
-        else {
-          res(Boom.badRequest("Incorrect credentials!"));
-        }
-      });
+
+    const isValid = await bcrypt.compare(req.payload.password, user.password);
+    if (isValid) {
+      return user;
     } else {
-      res(Boom.badRequest("Incorrect credentials!"));
+      throw new Error();
     }
-  });
+  } catch (err) {
+    return Boom.badRequest("Email or password are incorrect.");
+  }
 }
 
 async function validate (decoded, request, h) {
-  User.findOne({
-    _id: decoded.id
-  }, (err, user) => {
-    if (err) {
-      Boom.badRequest(err);
-    }
-    if (!user) {
-      return { isValid: false };
-    } else {
-      return { isValid: true };
-    }
-  });
+  return { isValid: true };
 };
 
 module.exports = {

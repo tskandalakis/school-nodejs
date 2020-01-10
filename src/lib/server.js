@@ -3,8 +3,6 @@
 
 const Hapi = require("@hapi/hapi");
 const mongoose = require("mongoose");
-const glob = require("glob");
-const path = require("path");
 const config = require("../../config");
 const validate = require("../util/authFunctions").validate;
 
@@ -13,12 +11,11 @@ const server = Hapi.server({
   host: config.app_url
 });
 
-server.register(require("hapi-auth-jwt2"), (err) => {
-  if (err) {
-    throw err;
-  }
+exports.init = async () => {
+  await server.initialize();
+  await server.register([require("hapi-auth-jwt2")]);
 
-  server.auth.strategy("jwt", "jwt", true, {
+  server.auth.strategy("jwt", "jwt", {
     key: config.secret,
     validate: validate,
     verifyOptions: {
@@ -28,16 +25,9 @@ server.register(require("hapi-auth-jwt2"), (err) => {
 
   server.auth.default("jwt");
 
-  glob.sync("../routes/*.js", {
-    root: __dirname
-  }).forEach(file => {
-    const route = require(path.join(__dirname, file));
-    server.route(route);
-  });
-});
+  server.route(require("../routes/user.route"));
+  server.route(require("../routes/auth.route"));
 
-exports.init = async () => {
-  await server.initialize();
   return server;
 };
 

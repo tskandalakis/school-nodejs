@@ -3,8 +3,9 @@ const Joi = require("@hapi/joi");
 
 module.exports = {
   createUser: Joi.object({
-    name: Joi.string().alphanum().min(2).max(30).required(),
+    name: Joi.string().min(2).max(30).required(),
     email: Joi.string().email().required(),
-    password: Joi.string().required()
+    password: Joi.string().required(),
+    admin: Joi.boolean().required()
   })
 };

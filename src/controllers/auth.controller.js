@@ -1,12 +1,15 @@
-// user.controller.js
-const config = require("../../config");
+const Boom = require("@hapi/boom");
+const authFunctions = require("../util/authFunctions");
 
-function handleAuth (username, password) {
-  return "test";
+function login (req, h) {
+  try {
+    const token = authFunctions.createToken(req.pre.user);
+    return h.response({ token: token }).code(201);
+  } catch (err) {
+    throw Boom.badRequest(err);
+  }
 }
 
 module.exports = {
-  async authenticateUser (req, reply) {
-    return reply.response(handleAuth(req.username, req.password)).code(201);
-  }
+  login: login
 };

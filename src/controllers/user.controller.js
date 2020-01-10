@@ -7,21 +7,20 @@ function findUserById (userId) {
   return { user: "foo" };
 }
 
-function createUser (req, res) {
+async function createUser (req, h) {
   const user = new User();
   user.name = req.payload.name;
   user.email = req.payload.email;
   user.admin = false;
-  authFunctions.hashPassword(req.payload.password, (err, hash) => {
-    if (err) {
-      throw Boom.badRequest(err);
-    }
-    user.password = hash;
-    user.save((err, user) => {
-      if (err) throw Boom.badRequest(err);
-      res({ token: authFunctions.createToken(user) }).code(201);
-    });
-  });
+
+  try {
+    user.password = await authFunctions.hashPassword(req.payload.password);
+    await user.save();
+
+    return h.response("success").code(201);
+  } catch (err) {
+    throw Boom.badRequest(err);
+  }
 }
 
 module.exports = {

@@ -1,18 +1,16 @@
 const Boom = require("@hapi/boom");
 const User = require("../model/User");
 
-function verifyUniqueUser (req, res) {
-  User.findOne({
+async function verifyUniqueUser (req, h) {
+  const user = await User.findOne({
     email: req.payload.email
-  }, (err, user) => {
-    if (err) res(Boom.badRequest("Error, Please try again later."));
-    if (user) {
-      if (user.email === req.payload.email) {
-        res(Boom.badRequest("Email taken"));
-      }
-    }
-    res(req.payload);
   });
+
+  if (user) {
+    throw Boom.badRequest("Email taken");
+  }
+
+  return h.continue;
 }
 
 module.exports = {

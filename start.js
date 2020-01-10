@@ -1,5 +1,8 @@
 "use strict";
 
-const { start } = require("./src/lib/server");
+const { init, start } = require("./src/lib/server");
 
-start();
+(async () => {
+  await init();
+  start();
+})();

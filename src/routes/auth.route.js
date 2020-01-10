@@ -7,24 +7,25 @@ module.exports = [
   {
     path: "/api/auth/login",
     method: "POST",
-    handler: authController.login,
     config: {
+      auth: false,
+      validate: {
+        payload: authSchema.login
+      },
       pre: [
         { method: verifyLogin, assign: "user" }
       ],
-      validate: {
-        payload: authSchema.login
-      }
+      handler: authController.login
     }
-  },
-  {
-    path: "/api/auth/refresh",
-    method: "POST",
-    handler: authController.login,
-    config: {
-      validate: {
-        payload: authSchema.login
-      }
-    }
+  // },
+  // {
+  //   path: "/api/auth/refresh",
+  //   method: "POST",
+  //   config: {
+  //     validate: {
+  //       payload: authSchema.refresh
+  //     },
+  //     handler: authController.refresh
+  //   }
   }
 ];

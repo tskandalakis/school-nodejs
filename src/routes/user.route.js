@@ -7,6 +7,7 @@ module.exports = [
   {
     path: "/api/user",
     method: "GET",
+    config: { auth: false },
     handler: (req, reply) => {
       return reply.response("IT WORKS").code(200);
     }
@@ -18,7 +19,7 @@ module.exports = [
       pre: [
         { method: verifyUniqueUser }
       ],
-      handler: userController.create,
+      handler: userController.createUser,
       validate: {
         payload: userSchema.createUser
       }

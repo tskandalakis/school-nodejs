@@ -3,8 +3,8 @@ const Joi = require("@hapi/joi");
 
 module.exports = {
   login: Joi.object({
-    username: Joi.string()
-      .alphanum()
+    email: Joi.string()
+      .email()
       .required(),
     password: Joi.string()
       .required()
