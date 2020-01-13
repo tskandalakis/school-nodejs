@@ -28,17 +28,18 @@ exports.init = async () => {
   server.route(require("../routes/user.route"));
   server.route(require("../routes/auth.route"));
 
+  mongoose.connect(config.mongodb, {}, (err) => {
+    if (err) {
+      throw err;
+    }
+  });
+
   return server;
 };
 
 exports.start = async () => {
   await server.start();
   console.log(`Server running at: ${server.info.uri}`);
-  mongoose.connect(config.mongodb, {}, (err) => {
-    if (err) {
-      throw err;
-    }
-  });
   return server;
 };
 
