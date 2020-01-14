@@ -1,4 +1,5 @@
-// auth.routes.js
+// src/routes/auth.routes.js
+
 const authController = require("../controllers/auth.controller");
 const authSchema = require("./requestSchema/auth.schema");
 const verifyLogin = require("../util/authFunctions").verifyLogin;
@@ -17,15 +18,15 @@ module.exports = [
       ],
       handler: authController.login
     }
-  // },
-  // {
-  //   path: "/api/auth/refresh",
-  //   method: "POST",
-  //   config: {
-  //     validate: {
-  //       payload: authSchema.refresh
-  //     },
-  //     handler: authController.refresh
-  //   }
+  },
+  {
+    path: "/api/auth/refresh",
+    method: "POST",
+    config: {
+      validate: {
+        payload: authSchema.refresh
+      },
+      handler: authController.refresh
+    }
   }
 ];

@@ -1,8 +1,9 @@
-// authFunctions.js
+// src/util/authFunctions.js
+
 const Boom = require("@hapi/boom");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../model/User");
+const userFunctions = require("./userFunctions");
 const config = require("../../config");
 
 async function hashPassword (password) {
@@ -10,25 +11,47 @@ async function hashPassword (password) {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
   } catch (err) {
-    throw Boom.badRequest(err);
+    if (err.isBoom) throw err;
+    else throw Boom.badImplementation();
   }
 }
 
-function createToken (user) {
-  let scopes;
+function createAccessToken (user) {
+  try {
+    let scopes;
 
-  if (user.admin) {
-    scopes = "admin";
+    if (user.admin) {
+      scopes = "admin";
+    }
+    return jwt.sign({ id: user._id, email: user.email, name: user.name, scope: scopes }, config.secret, { algorithm: "HS256", expiresIn: "15m" });
+  } catch (err) {
+    if (err.isBoom) throw err;
+    else throw Boom.badImplementation();
   }
+}
 
-  return jwt.sign({ id: user._id, email: user.email, name: user.name, scope: scopes }, config.secret, { algorithm: "HS256", expiresIn: "1h" });
+async function refreshAccessToken (refreshToken) {
+  try {
+    const decoded = await jwt.verify(refreshToken, config.secret, { algorithms: ["HS256"] });
+    return createAccessToken(await userFunctions.findById(decoded.id));
+  } catch (err) {
+    if (err.isBoom) throw err;
+    else throw Boom.unauthorized("Invalid token");
+  }
+}
+
+function createRefreshToken (user) {
+  try {
+    return jwt.sign({ id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "24h" });
+  } catch (err) {
+    if (err.isBoom) throw err;
+    else throw Boom.badImplementation();
+  }
 }
 
 async function verifyLogin (req, h) {
   try {
-    const user = await User.findOne({
-      email: req.payload.email
-    });
+    const user = await userFunctions.findByEmail(req.payload.email);
 
     if (!user) {
       throw new Error();
@@ -41,7 +64,8 @@ async function verifyLogin (req, h) {
       throw new Error();
     }
   } catch (err) {
-    return Boom.badRequest("Email or password are incorrect.");
+    if (err.isBoom) throw err;
+    else throw Boom.badRequest("Email or password are incorrect.");
   }
 }
 
@@ -52,6 +76,8 @@ async function validate (decoded, request, h) {
 module.exports = {
   hashPassword: hashPassword,
   verifyLogin: verifyLogin,
-  createToken: createToken,
+  createAccessToken: createAccessToken,
+  refreshAccessToken: refreshAccessToken,
+  createRefreshToken: createRefreshToken,
   validate: validate
 };

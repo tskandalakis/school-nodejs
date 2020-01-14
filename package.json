@@ -10,8 +10,8 @@
   "author": "Tasos Skandalakis",
   "license": "ISC",
   "dependencies": {
-    "@elastic/elasticsearch": "^7.4.0",
     "@hapi/boom": "^8.0.1",
+    "@hapi/bounce": "^2.0.0",
     "@hapi/code": "^7.0.0",
     "@hapi/hapi": "^18.4.0",
     "@hapi/joi": "^16.1.7",

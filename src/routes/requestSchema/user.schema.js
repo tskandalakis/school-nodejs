@@ -1,4 +1,5 @@
-// user.schema.js
+// src/routes/requestSchema/user.schema.js
+
 const Joi = require("@hapi/joi");
 
 module.exports = {

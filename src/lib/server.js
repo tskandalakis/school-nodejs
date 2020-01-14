@@ -1,4 +1,5 @@
-// server.js
+// src/lib/server.js
+
 "use strict";
 
 const Hapi = require("@hapi/hapi");
@@ -25,6 +26,7 @@ exports.init = async () => {
 
   server.auth.default("jwt");
 
+  // Register Routes
   server.route(require("../routes/user.route"));
   server.route(require("../routes/auth.route"));
 

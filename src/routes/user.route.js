@@ -1,4 +1,5 @@
-// user.routes.js
+// src/routes/user.routes.js
+
 const userController = require("../controllers/user.controller");
 const userSchema = require("./requestSchema/user.schema");
 const verifyUniqueUser = require("../util/userFunctions").verifyUniqueUser;
@@ -7,7 +8,6 @@ module.exports = [
   {
     path: "/api/user",
     method: "GET",
-    config: { auth: false },
     handler: (req, reply) => {
       return reply.response("IT WORKS").code(200);
     }
