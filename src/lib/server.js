@@ -4,15 +4,20 @@
 
 const Hapi = require("@hapi/hapi");
 const mongoose = require("mongoose");
-const config = require("../../config");
+const config = require("../../config")[process.env.NODE_ENV];
 const validate = require("../util/authFunctions").validate;
 
 const server = Hapi.server({
   port: config.app_port,
-  host: config.app_url
+  host: config.app_url,
+  routes: { cors: true }
 });
 
+let initialized = false;
+
 exports.init = async () => {
+  if (initialized) return server;
+
   await server.initialize();
   await server.register([require("hapi-auth-jwt2")]);
 
@@ -29,12 +34,16 @@ exports.init = async () => {
   // Register Routes
   server.route(require("../routes/user.route"));
   server.route(require("../routes/auth.route"));
+  server.route(require("../routes/school.route"));
 
-  mongoose.connect(config.mongodb, {}, (err) => {
+  mongoose.set("useCreateIndex", true);
+  mongoose.connect(config.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {
     if (err) {
       throw err;
     }
   });
+
+  initialized = true;
 
   return server;
 };

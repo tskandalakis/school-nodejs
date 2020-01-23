@@ -17,10 +17,22 @@ async function verifyUniqueUser (req, h) {
 }
 
 async function findById (id) {
+  if (!ObjectId.isValid(id)) throw Boom.notFound();
   try {
     return await User.findById({
       _id: new ObjectId(id)
     });
+  } catch (err) {
+    throw Boom.badImplementation();
+  }
+}
+
+async function findByIdSafe (id) {
+  if (!ObjectId.isValid(id)) throw Boom.notFound();
+  try {
+    return await User.findById({
+      _id: new ObjectId(id)
+    }, "-password");
   } catch (err) {
     throw Boom.badImplementation();
   }
@@ -39,5 +51,6 @@ async function findByEmail (email) {
 module.exports = {
   verifyUniqueUser: verifyUniqueUser,
   findById: findById,
+  findByIdSafe: findByIdSafe,
   findByEmail: findByEmail
 };

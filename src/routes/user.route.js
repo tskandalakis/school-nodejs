@@ -6,10 +6,10 @@ const verifyUniqueUser = require("../util/userFunctions").verifyUniqueUser;
 
 module.exports = [
   {
-    path: "/api/user",
+    path: "/api/user/{id}",
     method: "GET",
-    handler: (req, reply) => {
-      return reply.response("IT WORKS").code(200);
+    config: {
+      handler: userController.findUser
     }
   },
   {

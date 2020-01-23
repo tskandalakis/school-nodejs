@@ -4,8 +4,8 @@
   "description": "Nodejs backend for school app",
   "main": "start.js",
   "scripts": {
-    "test": "lab -v ./test/",
-    "start": "node start.js"
+    "test": "cross-env NODE_ENV=test lab -v ./test/",
+    "start": "cross-env NODE_ENV=local start.js"
   },
   "author": "Tasos Skandalakis",
   "license": "ISC",
@@ -17,10 +17,12 @@
     "@hapi/joi": "^16.1.7",
     "@hapi/lab": "^21.0.0",
     "bcrypt": "^3.0.7",
+    "cross-env": "^6.0.3",
     "glob": "^7.1.6",
     "hapi-auth-jwt2": "^8.8.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.4",
+    "mongoose-dummy": "^1.0.8",
     "path": "^0.12.7"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@
 
 const Lab = require("@hapi/lab");
 const { expect } = require("@hapi/code");
+const Dummy = require("mongoose-dummy");
 const { after, before, describe, it } = exports.lab = Lab.script();
 const { init } = require("../src/lib/server");
 const User = require("../src/model/User");
@@ -9,7 +10,8 @@ const authFunctions = require("../src/util/authFunctions");
 
 describe("AUTH TESTS", () => {
   let server;
-  let user;
+  let normalUser;
+  let normalUserPasswordPlainText;
   let validAccessToken;
   let validRefreshToken;
   const invalidAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMThjNmY5NDk5ZmY2NzI1MGRkMmE2OCIsImVtYWlsIjoidGFzb3NrYW5kYWxha2lzQGdtYWlsLmNvbSIsIm5hbWUiOiJUYXNvcyBTa2FuZGFsYWtpcyIsImlhdCI6MTU3ODcwMDUzOCwiZXhwIjoxNTc4NzA0MTM4fQ.6dGQZuyWWye530PKJeC9VbT-MGy4uLoWRruPR3DfqE4";
@@ -17,25 +19,22 @@ describe("AUTH TESTS", () => {
 
   before(async () => {
     server = await init();
-
-    const testUser = new User();
-    testUser.name = "Test Test";
-    testUser.email = "test@test.com";
-    testUser.admin = false;
-    testUser.password = await authFunctions.hashPassword("testPassword");
-    await testUser.save();
-    user = testUser;
-    validAccessToken = await authFunctions.createAccessToken(user);
-    validRefreshToken = await authFunctions.createRefreshToken(user);
+    normalUser = new User(await Dummy(User));
+    normalUser.role = "student";
+    normalUserPasswordPlainText = normalUser.password;
+    normalUser.password = await authFunctions.hashPassword(normalUser.password);
+    await normalUser.save();
+    validAccessToken = await authFunctions.createAccessToken(normalUser);
+    validRefreshToken = await authFunctions.createRefreshToken(normalUser);
   });
 
-  it("POST /api/auth/login | responds with 200 and returns object containing access_token and refresh_token strings", async () => {
+  it("POST /api/auth/login | responds with 201 and returns object containing access_token and refresh_token strings", async () => {
     const res = await server.inject({
       method: "post",
       url: "/api/auth/login",
       payload: {
-        email: "test@test.com",
-        password: "testPassword"
+        email: normalUser.email,
+        password: normalUserPasswordPlainText
       }
     });
 
@@ -83,10 +82,7 @@ describe("AUTH TESTS", () => {
     const res = await server.inject({
       method: "post",
       url: "/api/auth/refresh",
-      auth: {
-        strategy: "jwt",
-        credentials: validAccessToken
-      },
+      headers: { authorization: validAccessToken },
       payload: {
         refresh_token: validRefreshToken
       }
@@ -98,10 +94,7 @@ describe("AUTH TESTS", () => {
     const res = await server.inject({
       method: "post",
       url: "/api/auth/refresh",
-      auth: {
-        strategy: "jwt",
-        credentials: validAccessToken
-      },
+      headers: { authorization: validAccessToken },
       payload: {
         refresh_token: invalidRefreshToken
       }
@@ -113,10 +106,7 @@ describe("AUTH TESTS", () => {
     const res = await server.inject({
       method: "post",
       url: "/api/auth/refresh",
-      auth: {
-        strategy: "jwt",
-        credentials: validAccessToken
-      },
+      headers: { authorization: validAccessToken },
       payload: {
       }
     });
@@ -127,10 +117,7 @@ describe("AUTH TESTS", () => {
     const res = await server.inject({
       method: "post",
       url: "/api/auth/refresh",
-      auth: {
-        strategy: "jwt",
-        credentials: invalidAccessToken
-      },
+      headers: { authorization: invalidAccessToken },
       payload: {
         refresh_token: invalidRefreshToken
       }
@@ -139,7 +126,6 @@ describe("AUTH TESTS", () => {
   });
 
   after(async () => {
-    await user.delete();
-    await server.stop();
+    await User.deleteMany({});
   });
 });

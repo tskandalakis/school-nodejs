@@ -23,6 +23,7 @@ module.exports = [
     path: "/api/auth/refresh",
     method: "POST",
     config: {
+      auth: false,
       validate: {
         payload: authSchema.refresh
       },

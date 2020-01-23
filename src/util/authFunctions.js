@@ -4,7 +4,7 @@ const Boom = require("@hapi/boom");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userFunctions = require("./userFunctions");
-const config = require("../../config");
+const config = require("../../config")[process.env.NODE_ENV];
 
 async function hashPassword (password) {
   try {
@@ -18,12 +18,7 @@ async function hashPassword (password) {
 
 function createAccessToken (user) {
   try {
-    let scopes;
-
-    if (user.admin) {
-      scopes = "admin";
-    }
-    return jwt.sign({ id: user._id, email: user.email, name: user.name, scope: scopes }, config.secret, { algorithm: "HS256", expiresIn: "15m" });
+    return jwt.sign({ _id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "15m" });
   } catch (err) {
     if (err.isBoom) throw err;
     else throw Boom.badImplementation();
@@ -33,7 +28,7 @@ function createAccessToken (user) {
 async function refreshAccessToken (refreshToken) {
   try {
     const decoded = await jwt.verify(refreshToken, config.secret, { algorithms: ["HS256"] });
-    return createAccessToken(await userFunctions.findById(decoded.id));
+    return createAccessToken(await userFunctions.findById(decoded._id));
   } catch (err) {
     if (err.isBoom) throw err;
     else throw Boom.unauthorized("Invalid token");
@@ -42,7 +37,7 @@ async function refreshAccessToken (refreshToken) {
 
 function createRefreshToken (user) {
   try {
-    return jwt.sign({ id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "24h" });
+    return jwt.sign({ _id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "24h" });
   } catch (err) {
     if (err.isBoom) throw err;
     else throw Boom.badImplementation();
