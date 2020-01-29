@@ -1,44 +1,58 @@
 // src/util/roleFunctions.js
 
 const Boom = require("@hapi/boom");
-const jwt = require("jsonwebtoken");
-const config = require("../../config")[process.env.NODE_ENV];
-const userFunctions = require("../util/userFunctions");
+const Bounce = require("@hapi/bounce");
+const authFunctions = require("../util/authFunctions");
 
-async function isRole (role, token) {
-  const decoded = await jwt.verify(token, config.secret, { algorithms: ["HS256"] });
-  const user = await userFunctions.findById(decoded._id);
+async function checkRoles (req, h) {
+  try {
+    const requiredRoles = req.route.settings.app.roles;
+    const user = await authFunctions.getActiveUser(req);
 
-  if (user.role === role) {
-    return true;
-  } else {
-    throw Boom.forbidden("");
+    if (requiredRoles.includes(user.role)) {
+      return h.continue;
+    } else {
+      throw Boom.forbidden("");
+    }
+  } catch (err) {
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
-async function isSuper (req, h) {
-  await isRole("super", req.headers.authorization);
-  return h.continue;
+async function hasRoles (req, roleArr) {
+  try {
+    const user = await authFunctions.getActiveUser(req);
+
+    return roleArr.includes(user.role);
+  } catch (err) {
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
+  }
 }
 
-async function isAdmin (req, h) {
-  await isRole("admin", req.headers.authorization);
-  return h.continue;
-}
-
-async function isTeacher (req, h) {
-  await isRole("teacher", req.headers.authorization);
-  return h.continue;
-}
-
-async function isStudent (req, h) {
-  await isRole("student", req.headers.authorization);
-  return h.continue;
+async function checkSchoolId (req, schoolId) {
+  try {
+    const user = await authFunctions.getActiveUser(req);
+    if (user.role === "super" || user.school_id.toString() === schoolId.toString()) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
+  }
 }
 
 module.exports = {
-  isSuper: isSuper,
-  isAdmin: isAdmin,
-  isTeacher: isTeacher,
-  isStudent: isStudent
+  checkRoles: checkRoles,
+  hasRoles: hasRoles,
+  checkSchoolId: checkSchoolId
 };

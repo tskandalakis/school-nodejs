@@ -1,6 +1,7 @@
 // src/controllers/school.controller.js
 
 const Boom = require("@hapi/boom");
+const Bounce = require("@hapi/bounce");
 const School = require("../model/School");
 const schoolFunctions = require("../util/schoolFunctions");
 
@@ -23,8 +24,10 @@ async function findSchoolsPaginated (req, h) {
       count: await School.countDocuments()
     }).code(200);
   } catch (err) {
-    if (err.isBoom) return err;
-    else return Boom.badRequest(err);
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -34,8 +37,10 @@ async function findSchool (req, h) {
     if (!school) throw Boom.notFound("School not found.");
     return h.response(school).code(200);
   } catch (err) {
-    if (err.isBoom) return err;
-    else return Boom.badRequest(err);
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -48,8 +53,10 @@ async function createSchool (req, h) {
 
     return h.response("success").code(201);
   } catch (err) {
-    if (err.isBoom) return err;
-    else return Boom.badRequest(err);
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -63,8 +70,10 @@ async function updateSchool (req, h) {
 
     return h.response("success").code(200);
   } catch (err) {
-    if (err.isBoom) return err;
-    else return Boom.badRequest(err);
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 

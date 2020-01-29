@@ -9,8 +9,11 @@ module.exports = [
     path: "/api/school",
     method: "GET",
     config: {
+      app: {
+        roles: ["super"]
+      },
       pre: [
-        { method: roleFunctions.isSuper }
+        { method: roleFunctions.checkRoles }
       ],
       handler: schoolController.findSchools
     }
@@ -19,11 +22,14 @@ module.exports = [
     path: "/api/school",
     method: "POST",
     config: {
+      app: {
+        roles: ["super"]
+      },
       validate: {
         payload: schoolSchema.createSchool
       },
       pre: [
-        { method: roleFunctions.isSuper }
+        { method: roleFunctions.checkRoles }
       ],
       handler: schoolController.createSchool
     }
@@ -32,8 +38,11 @@ module.exports = [
     path: "/api/school/{id}",
     method: "GET",
     config: {
+      app: {
+        roles: ["super"]
+      },
       pre: [
-        { method: roleFunctions.isSuper }
+        { method: roleFunctions.checkRoles }
       ],
       handler: schoolController.findSchool
     }
@@ -42,11 +51,14 @@ module.exports = [
     path: "/api/school/{id}",
     method: "PUT",
     config: {
+      app: {
+        roles: ["super"]
+      },
       validate: {
         payload: schoolSchema.updateSchool
       },
       pre: [
-        { method: roleFunctions.isSuper }
+        { method: roleFunctions.checkRoles }
       ],
       handler: schoolController.updateSchool
     }

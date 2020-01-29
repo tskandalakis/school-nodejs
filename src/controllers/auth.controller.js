@@ -11,8 +11,10 @@ async function login (req, h) {
       refresh_token: await authFunctions.createRefreshToken(req.pre.user)
     }).code(201);
   } catch (err) {
+    /* $lab:coverage:off$ */
     if (err.isBoom) Bounce.rethrow(err, "boom");
-    else throw Boom.badImplementation();
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -22,8 +24,10 @@ async function refresh (req, h) {
       access_token: await authFunctions.refreshAccessToken(req.payload.refresh_token)
     }).code(201);
   } catch (err) {
+    /* $lab:coverage:off$ */
     if (err.isBoom) Bounce.rethrow(err, "boom");
-    else throw Boom.badImplementation();
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 

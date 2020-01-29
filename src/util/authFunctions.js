@@ -1,6 +1,7 @@
 // src/util/authFunctions.js
 
 const Boom = require("@hapi/boom");
+const Bounce = require("@hapi/bounce");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userFunctions = require("./userFunctions");
@@ -11,27 +12,40 @@ async function hashPassword (password) {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
   } catch (err) {
-    if (err.isBoom) throw err;
-    else throw Boom.badImplementation();
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
 function createAccessToken (user) {
   try {
-    return jwt.sign({ _id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "15m" });
+    return jwt.sign({ _id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "1h" });
   } catch (err) {
-    if (err.isBoom) throw err;
-    else throw Boom.badImplementation();
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
 async function refreshAccessToken (refreshToken) {
   try {
-    const decoded = await jwt.verify(refreshToken, config.secret, { algorithms: ["HS256"] });
+    let decoded;
+
+    try {
+      decoded = await jwt.verify(refreshToken, config.secret, { algorithms: ["HS256"] });
+    } catch (err) {
+      throw Boom.unauthorized("Refresh Token Invalid.");
+    }
+
     return createAccessToken(await userFunctions.findById(decoded._id));
   } catch (err) {
-    if (err.isBoom) throw err;
-    else throw Boom.unauthorized("Invalid token");
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -39,8 +53,10 @@ function createRefreshToken (user) {
   try {
     return jwt.sign({ _id: user._id }, config.secret, { algorithm: "HS256", expiresIn: "24h" });
   } catch (err) {
-    if (err.isBoom) throw err;
-    else throw Boom.badImplementation();
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -49,18 +65,31 @@ async function verifyLogin (req, h) {
     const user = await userFunctions.findByEmail(req.payload.email);
 
     if (!user) {
-      throw new Error();
+      throw Boom.badRequest("Email or password are incorrect.");
     }
 
-    const isValid = await bcrypt.compare(req.payload.password, user.password);
-    if (isValid) {
+    if (await bcrypt.compare(req.payload.password, user.password)) {
       return user;
     } else {
-      throw new Error();
+      throw Boom.badRequest("Email or password are incorrect.");
     }
   } catch (err) {
-    if (err.isBoom) throw err;
-    else throw Boom.badRequest("Email or password are incorrect.");
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
+  }
+}
+
+async function getActiveUser (req) {
+  try {
+    const decoded = await jwt.verify(req.headers.authorization, config.secret, { algorithms: ["HS256"] });
+    return await userFunctions.findById(decoded._id);
+  } catch (err) {
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
   }
 }
 
@@ -74,5 +103,6 @@ module.exports = {
   createAccessToken: createAccessToken,
   refreshAccessToken: refreshAccessToken,
   createRefreshToken: createRefreshToken,
+  getActiveUser: getActiveUser,
   validate: validate
 };

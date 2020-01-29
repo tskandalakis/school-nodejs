@@ -38,9 +38,11 @@ exports.init = async () => {
 
   mongoose.set("useCreateIndex", true);
   mongoose.connect(config.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {
+    /* $lab:coverage:off$ */
     if (err) {
       throw err;
     }
+    /* $lab:coverage:on$ */
   });
 
   initialized = true;
@@ -48,6 +50,7 @@ exports.init = async () => {
   return server;
 };
 
+/* $lab:coverage:off$ */
 exports.start = async () => {
   await server.start();
   console.log(`Server running at: ${server.info.uri}`);
@@ -58,3 +61,4 @@ process.on("unhandledRejection", (err) => {
   console.log(err);
   process.exit(1);
 });
+/* $lab:coverage:on$ */

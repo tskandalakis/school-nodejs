@@ -4,8 +4,8 @@
   "description": "Nodejs backend for school app",
   "main": "start.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test lab -v ./test/",
-    "start": "cross-env NODE_ENV=local start.js"
+    "test": "cross-env NODE_ENV=test lab -v -c ./test/",
+    "start": "cross-env NODE_ENV=local node start.js"
   },
   "author": "Tasos Skandalakis",
   "license": "ISC",
