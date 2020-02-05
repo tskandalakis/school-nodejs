@@ -21,7 +21,7 @@ async function findSchoolsPaginated (req, h) {
         limit: size,
         skip: (page - 1) * size
       }),
-      count: await School.countDocuments()
+      count: await School.countDocuments(search)
     }).code(200);
   } catch (err) {
     /* $lab:coverage:off$ */

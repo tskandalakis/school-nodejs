@@ -22,11 +22,13 @@ async function checkRoles (req, h) {
   }
 }
 
-async function hasRoles (req, roleArr) {
+async function isSuper (user) {
   try {
-    const user = await authFunctions.getActiveUser(req);
-
-    return roleArr.includes(user.role);
+    if (user.role === "super") {
+      return true;
+    } else {
+      return false;
+    }
   } catch (err) {
     /* $lab:coverage:off$ */
     if (err.isBoom) Bounce.rethrow(err, "boom");
@@ -35,10 +37,24 @@ async function hasRoles (req, roleArr) {
   }
 }
 
-async function checkSchoolId (req, schoolId) {
+async function isStudent (user) {
   try {
-    const user = await authFunctions.getActiveUser(req);
-    if (user.role === "super" || user.school_id.toString() === schoolId.toString()) {
+    if (user.role === "student") {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (err) {
+    /* $lab:coverage:off$ */
+    if (err.isBoom) Bounce.rethrow(err, "boom");
+    else throw Boom.badImplementation(err);
+    /* $lab:coverage:on$ */
+  }
+}
+
+async function compareSchoolId (user, obj2) {
+  try {
+    if (user.role === "super" || user.school_id.toString() === obj2.school_id.toString()) {
       return true;
     } else {
       return false;
@@ -53,6 +69,7 @@ async function checkSchoolId (req, schoolId) {
 
 module.exports = {
   checkRoles: checkRoles,
-  hasRoles: hasRoles,
-  checkSchoolId: checkSchoolId
+  isSuper: isSuper,
+  isStudent: isStudent,
+  compareSchoolId: compareSchoolId
 };

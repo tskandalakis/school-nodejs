@@ -83,7 +83,8 @@ async function verifyLogin (req, h) {
 
 async function getActiveUser (req) {
   try {
-    const decoded = await jwt.verify(req.headers.authorization, config.secret, { algorithms: ["HS256"] });
+    const token = req.headers.authorization.replace(/^Bearer\s/, "");
+    const decoded = await jwt.verify(token, config.secret, { algorithms: ["HS256"] });
     return await userFunctions.findById(decoded._id);
   } catch (err) {
     /* $lab:coverage:off$ */

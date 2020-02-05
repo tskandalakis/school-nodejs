@@ -35,6 +35,7 @@ exports.init = async () => {
   server.route(require("../routes/user.route"));
   server.route(require("../routes/auth.route"));
   server.route(require("../routes/school.route"));
+  server.route(require("../routes/course.route"));
 
   mongoose.set("useCreateIndex", true);
   mongoose.connect(config.mongodb, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {

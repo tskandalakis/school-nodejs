@@ -154,7 +154,6 @@ describe("USER | CREATE | POST /api/user", () => {
       headers: { authorization: adminAccessToken },
       payload: {
         name: dummyUser.name,
-        school_id: school._id,
         email: dummyUser.email,
         password: "fooBar",
         role: "super"
